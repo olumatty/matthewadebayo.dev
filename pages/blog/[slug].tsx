@@ -14,6 +14,7 @@ import Image from 'next/image';
 import { serialize } from 'next-mdx-remote/serialize';
 import { MDXRemote, MDXRemoteSerializeResult } from 'next-mdx-remote';
 import MDXComponents from 'components/mdx-components';
+import rehypePrettyCode from 'rehype-pretty-code';
 
 interface BlogPageProps {
   blog: Post;
@@ -32,7 +33,7 @@ export default function BlogPage({ blog, ogImageUrl, mdxSource }: BlogPageProps)
         description={blog.description}
         post={{ date: date.iso, tags: blog.tags }}
       />
-      <Box maxWidth="4xl" marginX="auto" paddingTop="12" paddingBottom="8rem">
+      <Box maxWidth="4xl" marginX="auto" paddingTop="4" paddingBottom="4rem">
         <article>
           <Box marginBottom="6">
             <Heading size="2xl" as="h1" marginBottom="8" color="white">
@@ -106,7 +107,7 @@ export default function BlogPage({ blog, ogImageUrl, mdxSource }: BlogPageProps)
 
         <Box as="hr" borderColor="whiteAlpha.200" mt="3rem" />
 
-        <Box as="hr" borderColor="whiteAlpha.200" mt="3rem" mb="9rem" />
+        <Box as="hr" borderColor="whiteAlpha.200" mt="3rem" mb="6rem" />
 
         <AuthorProfile />
       </Box>
@@ -117,21 +118,38 @@ export default function BlogPage({ blog, ogImageUrl, mdxSource }: BlogPageProps)
 export const getStaticPaths: GetStaticPaths = async () => {
   return {
     paths: posts.map((post) => ({
-      params: { slug: post.slugAsParams }, // Changed from post.slug to post.slugAsParams
+      params: { slug: post.slugAsParams },
     })),
     fallback: false,
   };
 };
 
 export const getStaticProps: GetStaticProps<BlogPageProps> = async ({ params }) => {
-  const blog = posts.find((post) => post.slugAsParams === params?.slug); // Changed from post.slug
+  const blog = posts.find((post) => post.slugAsParams === params?.slug);
 
   if (!blog) {
     return { notFound: true };
   }
 
-  // Serialize the MDX content using next-mdx-remote
-  const mdxSource = await serialize(blog.content || '');
+  // Serialize the MDX content with rehype-pretty-code plugin
+  const mdxSource = await serialize(blog.content || '', {
+    mdxOptions: {
+      rehypePlugins: [
+        [
+          rehypePrettyCode,
+          {
+            theme: 'dracula',
+            keepBackground: true,
+            onVisitLine(node: any) {
+              if (node.children.length === 0) {
+                node.children = [{ type: 'text', value: ' ' }];
+              }
+            },
+          },
+        ],
+      ],
+    },
+  });
 
   const searchParams = new URLSearchParams();
   searchParams.set('title', blog.title);

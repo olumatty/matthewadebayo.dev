@@ -6,7 +6,7 @@ import theme from 'lib/theme';
 import { DefaultSeo } from 'next-seo';
 import type { AppProps } from 'next/app';
 import seo from 'site.config';
-import '../styles/prism.css';
+import '../styles/code.css';
 
 export default function App({ Component, pageProps }: AppProps) {
   return (

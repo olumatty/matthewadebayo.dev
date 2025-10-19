@@ -14,7 +14,7 @@ const posts = defineCollection({
       featured: s.boolean().default(false),
       image: s.string(),
       tags: s.array(s.string()).optional(),
-      content: s.raw(), // Raw content for reading time and MDX rendering
+      content: s.raw(),
       body: s.mdx(),
     })
     .transform((data) => ({
@@ -35,16 +35,20 @@ export default defineConfig({
     name: '[name]-[hash:6].[ext]',
     clean: true,
   },
-  collections: { posts }, // Only blog posts
+  collections: { posts },
   mdx: {
-    // Use function-body format to avoid import statements
     remarkPlugins: [],
     rehypePlugins: [
       [
         rehypePrettyCode,
         {
-          theme: 'nord',
-          keepBackground: false,
+          theme: 'dracula',
+          keepBackground: true,
+          onVisitLine(node: any) {
+            if (node.children.length === 0) {
+              node.children = [{ type: 'text', value: ' ' }];
+            }
+          },
         },
       ],
     ],

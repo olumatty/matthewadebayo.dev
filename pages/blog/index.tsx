@@ -16,15 +16,11 @@ export default function Page() {
   return (
     <Container>
       <SEO title="Blog" />
-      <Box py="vGutter">
+      <Box py="8">
         <Box>
           <Heading size="3xl" marginBottom="6" as="h1" color="white">
             Blog
           </Heading>
-          <Text fontSize="lg" maxW="560px">
-            Here's a list of articles, thoughts and ideas around topics like design systems,
-            accessibility, state machines and lots more.
-          </Text>
         </Box>
 
         <Box maxWidth="xl" mt="8">
@@ -36,7 +32,7 @@ export default function Page() {
             }}
           />
         </Box>
-        <Box marginTop="4rem">
+        <Box marginTop="3rem">
           <SimpleGrid columns={{ base: 1, md: 3 }} mt="4rem" spacing="10">
             {search.results.map((blog) => (
               <BlogCard key={blog.title} post={blog} />
