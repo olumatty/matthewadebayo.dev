@@ -38,7 +38,7 @@ const siteConfig = {
   siteUrl: shared.website,
   profiles: {
     github: 'https://github.com/olumatty',
-    linkedin: 'https://github.com/olumatty',
+    linkedin: 'https://www.linkedin.com/in/adebayo-matthew',
     email: 'mailto:olumatty@gmail.com',
   },
   repo: {
