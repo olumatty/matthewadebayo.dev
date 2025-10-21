@@ -1,4 +1,4 @@
-import { Box, Heading, SimpleGrid, Text } from '@chakra-ui/react';
+import { Box, Heading, Stack } from '@chakra-ui/react';
 import { BlogCard } from 'components/blog-card';
 import Container from 'components/container';
 import SearchInput from 'components/search-input';
@@ -12,14 +12,17 @@ export default function Page() {
 
   return (
     <Container>
-      <SEO title="Blog" />
+      <Box mx="auto">
+        <SEO title="Blog" />
+      </Box>
+
       <Box py="8">
         <Box>
-          <Heading size="3xl" marginBottom="6" as="h1" color="white">
+          <Heading size="2xl" marginBottom="6" as="h2" color="white" textAlign="center">
             Blog
           </Heading>
         </Box>
-        <Box maxWidth="xl" mt="8">
+        <Box maxWidth="2xl" mt="8" mx="auto">
           <SearchInput
             placeholder="Search blog"
             defaultValue={search.defaultValue}
@@ -28,12 +31,10 @@ export default function Page() {
             }}
           />
         </Box>
-        <Box marginTop="3rem">
-          <SimpleGrid columns={{ base: 1, md: 3 }} mt="4rem" spacing="10">
-            {isReady && search.results.map((blog) => (
-              <BlogCard key={blog.title} post={blog} />
-            ))}
-          </SimpleGrid>
+        <Box marginTop="3rem" maxWidth="2xl" mx="auto">
+          <Stack spacing="6" mt="4rem" direction="column">
+            {isReady && search.results.map((blog) => <BlogCard key={blog.title} post={blog} />)}
+          </Stack>
         </Box>
       </Box>
     </Container>

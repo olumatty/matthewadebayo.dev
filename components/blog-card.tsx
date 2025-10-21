@@ -1,7 +1,6 @@
 import { Post } from '#site/content';
-import { Box, Heading, HStack, LinkBox, LinkOverlay } from '@chakra-ui/react';
+import { Box, Heading, HStack, LinkBox, LinkOverlay, Text } from '@chakra-ui/react';
 import formatDate from 'lib/format-date';
-import Image from 'next/image';
 import Link from 'next/link';
 
 interface BlogCardProps {
@@ -9,40 +8,41 @@ interface BlogCardProps {
 }
 
 export function BlogCard({ post }: BlogCardProps) {
-  const { title, publishedAt, image, readingTime, slugAsParams } = post;
+  const { title, publishedAt, readingTime, slugAsParams, content } = post;
   const date = formatDate(publishedAt);
 
+  // Extract first line from content
+  const excerpt =
+    content
+      ?.split('\n')
+      .find((line) => line.trim().length > 0)
+      ?.substring(0, 200) || '';
+
   return (
-    <LinkBox>
-      <Box height="210px" rounded="lg" overflow="hidden" position="relative">
-        <Image
-          src={image}
-          alt={title}
-          width={340}
-          height={210}
-          style={{ objectFit: 'cover' }}
-          priority
-        />
-      </Box>
+    <LinkBox
+      bg="whiteAlpha.50"
+      p="6"
+      rounded="lg"
+      _hover={{ bg: 'whiteAlpha.100' }}
+      transition="background 0.2s"
+    >
+      <Heading size="md" fontWeight="semibold" mb="3">
+        <LinkOverlay as={Link} href={`/blog/${slugAsParams}`}>
+          {title}
+        </LinkOverlay>
+      </Heading>
 
-      <Box flex="1" mt="5">
-        <HStack spacing="5" fontSize="sm">
-          <HStack spacing="2" color="brown.300">
-            <Box as="time" dateTime={date.iso}>
-              {date.pretty}
-            </Box>
-            <span aria-hidden>•</span>
-            {/* Optional chain + fallback */}
-            <Box>{readingTime?.text || '5 min read'}</Box>
-          </HStack>
-        </HStack>
+      <HStack spacing="2" fontSize="sm" color="gray.400" mb="3">
+        <Box as="time" dateTime={date.iso}>
+          {date.pretty}
+        </Box>
+        <span aria-hidden>•</span>
+        <Box>{readingTime?.text || '5 min read'}</Box>
+      </HStack>
 
-        <Heading size="lg" fontWeight="semibold" marginY="4">
-          <LinkOverlay as={Link} href={`/blog/${slugAsParams}`}>
-            {title}
-          </LinkOverlay>
-        </Heading>
-      </Box>
+      <Text color="gray.300" fontSize="md">
+        {excerpt}
+      </Text>
     </LinkBox>
   );
 }

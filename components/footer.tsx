@@ -6,8 +6,9 @@ import { EmailIcon, GithubIcon, LinkedInIcon } from './social-icons';
 export default function Footer() {
   return (
     <Box as="footer" position="relative" paddingY="8">
-      <Box maxWidth="6xl" marginX="auto" paddingX="6">
-        <HStack marginTop="6" spacing={{ base: '8', md: '10' }}>
+      <Box maxWidth="6xl" marginX="auto" paddingX="6" mx="auto">
+        {/* Centered social links */}
+        <HStack marginTop="6" spacing={{ base: '8', md: '10' }} justify="center">
           <LinkItem href={siteConfig.profiles.linkedin} icon={LinkedInIcon}>
             LinkedIn
           </LinkItem>
@@ -19,7 +20,8 @@ export default function Footer() {
           </LinkItem>
         </HStack>
 
-        <Text marginTop="12" opacity="0.7">
+        {/* Centered copyright text */}
+        <Text marginTop="12" opacity="0.7" textAlign="center">
           All rights reserved &copy; Matthew Adebayo {new Date().getFullYear()}
         </Text>
       </Box>

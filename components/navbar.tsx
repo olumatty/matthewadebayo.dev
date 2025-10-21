@@ -1,67 +1,6 @@
-import {
-  Box,
-  Circle,
-  Flex,
-  HStack,
-  Icon,
-  StackProps,
-  Text,
-  VisuallyHidden,
-} from '@chakra-ui/react';
+import { Box, Circle, Flex, VisuallyHidden } from '@chakra-ui/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { ElementType, ReactNode } from 'react';
-import { BlogIcon } from './nav-icons';
-
-type NavItemProps = {
-  data: NavItemData;
-  active?: boolean;
-  children: ReactNode;
-};
-
-function NavItem(props: NavItemProps) {
-  const { children, data, active } = props;
-  return (
-    <HStack
-      as={Link}
-      href={data.href}
-      spacing="2"
-      paddingX="3"
-      paddingY="2.5"
-      rounded="lg"
-      aria-current={active ? 'page' : undefined}
-      _hover={{ color: 'brown.600' }}
-      _activeLink={{ bg: 'gray.800', shadow: 'highlight' }}
-    >
-      <Icon as={data.icon} color="brown.600" fontSize="lg" />
-      <Text fontFamily="heading">{children}</Text>
-    </HStack>
-  );
-}
-
-interface NavItemData {
-  label: string;
-  href: string;
-  icon: ElementType;
-}
-
-const items: NavItemData[] = [
-  { label: 'Blog', href: '/blog', icon: BlogIcon },
-];
-
-function NavItemGroup(props: StackProps) {
-  const { asPath } = useRouter();
-  return (
-    <HStack as="nav" aria-label="Main navigation" spacing="8" {...props}>
-      {items.map((item) => (
-        <NavItem key={item.label} data={item} active={asPath.startsWith(item.href)}>
-          {item.label}
-        </NavItem>
-      ))}
-    </HStack>
-  );
-}
 
 function Headshot() {
   return (
@@ -88,7 +27,6 @@ export default function Navbar() {
         <Link href="/">
           <Headshot />
         </Link>
-        <NavItemGroup />
       </Flex>
     </Box>
   );
