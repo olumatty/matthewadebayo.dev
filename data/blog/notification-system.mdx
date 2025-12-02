@@ -1,0 +1,186 @@
+---
+title: How Node.js notification system works
+description: 'How Node.js notification system works with fcm and resend'
+publishedAt: 2025-12-01
+image: https://images.unsplash.com/photo-1483817101829-339b08e8d83f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjF8fGNvZGluZyUyMHRlcm1pbmFsfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=800&q=60
+tags: ['Node.js', 'typescript', 'backend']
+---
+
+A notification system is essential for a better user experience in an app. Notification systems are used in apps across almost every category to keep users engaged, informed, and returning to the application.
+
+**Scenario**: A user requested a ride from their location to the airport using a ride-sharing app (e.g., Uber, Bolt). User sees a push notification "Ride Confirmed! David is on the way in a blue sedan. ETA(Estimated time of arrival) to pickup: 4 minutes." or an In-App view of a display showing the rider’s name, car model, license plate, and a moving icon on the map to show the driver heading towards the user’s location.
+
+**Why does this matter**: The notification confirms the service. It immediately provides the driver and vehicle details necessary for safety and identification.
+
+Notification systems are crucial for modern applications and can deliver real-time alerts and scheduled messages via channels such as in-app messages, email, SMS, and push notifications.
+
+Before writing your code, you need to be clear on the type of notification you are sending through and the channel.
+
+### Common Notification Types
+
+- Transactional — Password resets, invoices, welcome emails
+
+- Event-Based — New message received, product shipped
+
+- System Alerts — Errors, downtimes, suspicious logins
+
+- Promotional — Offers, discounts, newsletter
+
+- Lifecycle/Onboarding — Finish profile setup, complete tutorial
+
+- Reminder/Utility — Daily habit tracking, subscription renewal warnings
+
+- Personalized/Recommendation — Suggested content, price drop alerts,
+
+- Social/Interaction — Likes, comments, mentions, new followers
+
+### Common Channel
+
+- Email — (Resend, Sendgrid, Twilo, Mailgun, PostMark, e.t.c.)
+
+- SMS - (Twilo, Vonage (Nexmo), e.t.c.)
+
+- In-app — (FCM, OneSignal, Pendo, e.t.c.)
+
+- Push - (FCM, OneSignal, Braze, Oneship, e.t.c.)
+
+## How push notifications works using push (FCM) and email notifications using Resend work
+
+### Overview
+
+This notification system supports:
+
+- **Push Notifications via Firebase Cloud Messaging (FCM)**
+- **Email Notifications via Resend**
+
+## Dependencies
+
+```yaml
+npm install firebase-admin resend dotenv
+
+npm install -D @types/node typescript tsx
+```
+
+## FCM Service (Push Notifications)
+
+Firebase Cloud Messaging service is Google's service for sending push notifications to:
+
+- iOS devices (via Apple Push Notification Service)
+- Android devices
+- Web browsers
+
+### How it works
+
+**APP** —-> **FCM(Google)** —-> **USER DEVICE**
+
+## Steps on how to set up Firebase and how it works
+
+First, we need to import our Firebase credentials, the projectId, and the privateKey. By default, the FCM SDK generates a registration token for the client app instance on app launch. Similar to the APNs device token, this token allows you to send targeted notifications to any particular instance of your app. The app sends the generated token to the application backend.
+
+Second, when the user logs in to the app, we store the token in the database, and the user’s device needs to be specified in the user schema or field.
+
+```typescript
+await db.insert(deviceTokens).values({
+  userId: 'user-123',
+  token: 'dQw4w9WgXcQ...',
+  platform: 'ios',
+});
+```
+
+Third, we push the notification to specific device tokens, i.e, either batch notification or single notification(i.e, to a particular user).
+
+```typescript
+export class FCMService {
+  async sendPush(
+    tokens: string[],
+    title: string,
+    body: string,
+    data?: Record<string, string>,
+  ): Promise<{ success: number; failed: number; invalidTokens: string[] }> {
+    if (tokens.length === 0) {
+      return { success: 0, failed: 0, invalidTokens: [] };
+    }
+
+    const message = {
+      notification: { title, body },
+      data: data || {},
+      tokens,
+      android: { priority: 'high' as const },
+      apns: {
+        payload: {
+          aps: { sound: 'default', badge: 1 },
+        },
+      },
+    };
+  }
+}
+```
+
+### To a particular token(i.e, a particular user):
+
+```typescript
+async sendToToken(
+    token: string,
+    title: string,
+    body: string
+    data?: Record<string, string>
+): Promise<boolean> {
+        const result = await this.sendPush([token], title, body, data);
+        return result.success > 0;
+}
+```
+
+Fourth, FCM Handles Delivery:
+
+- Google's servers route to the correct platform (Apple/Android).
+- The device receives a notification even if the app is closed.
+- User taps notification → app opens with data.
+
+## Email Service (Resend)
+
+Resend is the new email API for developers. It's designed for you to build, test, and send transactional emails at scale
+
+### How it works
+
+**APP** —-> **RESEND** —> **USER EMAIL**
+
+## Steps on how to set up Resend and how it works
+
+First, initialize Resend and also get your Resend api key from resend.com
+
+```typescript
+import { Resend } from 'resend';
+const resend = new Resend('process.env.RESEND_API_KEY ');
+```
+
+Second, send the email notification to the user’s email by generating an HTML email and sending mail via the resend api.
+
+```typescript
+export class EmailService {
+  async sendEmail(
+    to: string,
+    subject: string,
+    message: string,
+    data?: { actionUrl?: string; actionText?: string },
+  ): Promise<{ success: boolean; id?: string }> {
+    try {
+      const result = await resend.emails.send({
+        from: process.env.FROM_EMAIL || 'noreply@app.com',
+        to,
+        Subject,
+        html: this.generateHTML(subject, message, data),
+      });
+      return { success: true, id: result.data?.id };
+    } catch (error) {
+      console.error('Email Error:', error);
+      throw error;
+    }
+  }
+}
+```
+
+Third, Resend handles the delivery tracking.
+
+## Conclusion
+
+For a production-scale notification system, it would be advisable to have a queue using libraries like BULL and REDIS to keep API responses faster, automatically retry failed notifications and process bulk notifications faster.
