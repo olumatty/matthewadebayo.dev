@@ -1,0 +1,82 @@
+---
+title: Timing Side-Channel Attacks
+description: 'Timing side-channel'
+publishedAt: 2025-12-08
+image: https://images.unsplash.com/photo-1483817101829-339b08e8d83f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MjF8fGNvZGluZyUyMHRlcm1pbmFsfGVufDB8fDB8fA%3D%3D&auto=format&fit=crop&w=800&q=60
+tags: ['Node.js', 'typescript', 'backend']
+---
+
+Recently, while working on a project, I was tasked with an issue to solve while at it i had to validate a token. After implementing the usual validation logic, I noticed the team lead had modified the validation to address something called a “timing side-channel attack.” That got me curious—what exactly is a timing side-channel attack, and why is it important?
+
+### What is a Timing Side-Channel Attack?
+
+A timing side-channel attack is a technique where an attacker exploits the time it takes for a computer process like a password or token check to run, using that timing information to gain knowledge about or access to a system. In cryptographic systems, these attacks often focus on how long it takes to compare sensitive values, like tokens or passwords.
+
+### Analogy: The Guessing Game
+
+Imagine we’re playing a guessing game: I think of a 4-digit PIN, and you try to guess it. Each time you guess, I tell you how many digits you got right. That would make it pretty easy to figure out the PIN after a few guesses.
+
+A timing attack is similar, except instead of me telling you directly, you figure it out by measuring how long it takes me to respond because my response time depends on how many digits you got right before I stop checking.
+
+### The Problem: Traditional Comparison Leaks Information
+
+Let’s look at a naïve password comparison function:
+
+```typescript
+const comparePassword = (userInput, password) => {
+  if (userInput[0] !== password[0]) return false;
+  if (userInput[1] !== password[1]) return false;
+  if (userInput[2] !== password[2]) return false;
+  if (userInput[3] !== password[3]) return false;
+  return true;
+};
+```
+
+Here, the function checks each character in order and returns false as soon as it finds a mismatch. The problem? The function takes longer to return if more initial characters are correct, making it vulnerable to timing attacks.
+
+### Real Example: Cracking a PIN
+
+Suppose the real PIN is **"0371"**:
+
+- **Guess: "0000"** Checks: 0=0 ✓, 0≠3 ✗ — stops at 2nd digit, takes 0.9ms
+- **Guess: "1000"** Checks: 1≠0 ✗ — stops at 1st digit, takes 0.5ms
+- **Guess: "0300"** Checks: 0=0 ✓, 3=3 ✓, 0≠7 ✗ — stops at 3rd digit, takes 1.2ms
+
+### The Solution: Constant-Time Comparison
+
+To prevent this, use a **constant-time comparison** an algorithm that always takes the same amount of time, no matter where the first mismatch occurs. In Node.js, you can use the built-in crypto.timingSafeEqual for this.
+
+### Example: Safe Token Comparison
+
+First, install or require the crypto library:
+
+```typescript
+const crypto = require('crypto');
+
+const userSecret = Buffer.from('user-input-token');
+const storedSecret = Buffer.from('stored-secret');
+
+if (userSecret.length !== storedSecret.length) {
+  return false;
+}
+
+if (!crypto.timingSafeEqual(userSecret, storedSecret)) {
+  return false;
+}
+
+return true;
+```
+
+Here, the comparison always runs in constant time, preventing attackers from learning anything based on timing.
+
+### When Should You Use Constant-Time Comparison?
+
+- API tokens
+- Session IDs
+- Password hashes (after hashing)
+- HMAC signatures
+- Any other secret values
+
+### Conclusion
+
+Regular (character by character) comparison is simple but insecure, it can leak secret information through timing differences. Constant time comparison closes this gap, protecting your API or server from timing side-channel attacks and making your authentication logic more secure.
